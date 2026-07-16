@@ -13,7 +13,7 @@ FoodLabel AI is a specialized, regulatory-compliant web application designed for
 
 ## Live link
 
-[[https://your-username.github.io/foodlabel-ai/](https://marynamc123.github.io/food-label/)]
+[(https://marynamc123.github.io/food-label/)]
 
 ## How to use it
 
