@@ -380,6 +380,13 @@ async function handleTranslation() {
     return;
   }
   
+  // Validate input looks like food ingredients
+  const validation = validateIngredientInput(inputText);
+  if (!validation.valid) {
+    showToast(validation.message);
+    return;
+  }
+  
   // Show Progress HUD
   elements.progressHud.style.display = "flex";
   elements.dashboardActionButtons.style.display = "none";
@@ -1037,4 +1044,78 @@ function escapeHtml(text) {
     "'": '&#039;'
   };
   return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+// Input Validator to check if text is likely food ingredients
+function validateIngredientInput(text) {
+  const clean = text.trim();
+  if (clean.length < 3) {
+    return { valid: false, message: "Input is too short to be an ingredient list." };
+  }
+  
+  // If it's just numbers
+  if (/^\d+$/.test(clean.replace(/\s+/g, ""))) {
+    return { valid: false, message: "Input cannot be just numbers. Please enter a valid ingredient list." };
+  }
+
+  // Common non-food conversational words (stop words)
+  const conversationalStopWords = new Set([
+    "i", "you", "he", "she", "they", "we", "my", "your", "his", "her", "their", 
+    "want", "wants", "go", "goes", "went", "going", "sleep", "sleeps", "sleeping",
+    "think", "thinks", "thought", "how", "what", "where", "when", "why", "who",
+    "is", "am", "are", "was", "were", "be", "been", "do", "does", "did", "have", "has", "had",
+    "the", "a", "an", "and", "or", "but", "if", "then", "else", "because", "to", "for", "in", "on", "at", "by", "with",
+    "play", "run", "write", "read", "study", "code", "work", "hello", "hi", "please", "thanks", "thank", "weather",
+    "whoever", "whatever", "someone", "something", "eat", "eating"
+  ]);
+
+  const words = clean.toLowerCase().split(/[\s,.\-()]+/).map(w => w.replace(/[^a-z]/g, ""));
+  
+  // Count how many conversational stop words are in the input
+  let stopWordCount = 0;
+  let wordCount = 0;
+  words.forEach(w => {
+    if (w.length > 0) {
+      wordCount++;
+      if (conversationalStopWords.has(w)) {
+        stopWordCount++;
+      }
+    }
+  });
+
+  const stopWordRatio = wordCount > 0 ? stopWordCount / wordCount : 0;
+  
+  // Check if it contains any known ingredients or E-numbers from our offline database
+  let hasKnownIngredient = false;
+  
+  if (window.standardIngredientsMap) {
+    words.forEach(w => {
+      if (w.length > 0 && window.standardIngredientsMap[w]) {
+        hasKnownIngredient = true;
+      }
+    });
+  }
+
+  if (window.chemicalToENumberMap) {
+    const cleanLower = clean.toLowerCase();
+    for (const chem of Object.keys(window.chemicalToENumberMap)) {
+      if (cleanLower.includes(chem)) {
+        hasKnownIngredient = true;
+        break;
+      }
+    }
+  }
+
+  // Check if it contains any E-numbers pattern like E330 or INS 330
+  const hasENumberPattern = /(?:E|INS)?\s*-?\s*\d{3,4}/i.test(clean);
+
+  // If it is highly conversational and has no known ingredients or E-numbers, block it
+  if (stopWordRatio > 0.4 && !hasKnownIngredient && !hasENumberPattern) {
+    return { 
+      valid: false, 
+      message: "This input does not look like a list of food ingredients. Please enter a valid ingredient list." 
+    };
+  }
+
+  return { valid: true };
 }
