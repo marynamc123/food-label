@@ -17,7 +17,7 @@ https://your-username.github.io/foodlabel-ai/
 
 ## How to use it
 
-1. **Open the App**: Open the [Live Link](https://your-username.github.io/foodlabel-ai/) in any modern web browser (or double-click the `index.html` file to run it locally).
+1. **Open the App**: Open the [Live Link]((https://marynamc123.github.io/food-label/)) in any modern web browser (or double-click the `index.html` file to run it locally).
 2. **Configure Translation Mode**: 
    - By default, the application runs in **Offline Demo Mode** using local dictionaries.
    - For high-fidelity AI translation, open the **API Settings (הגדרות API)** overlay and enter your Google Gemini API key.
