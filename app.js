@@ -1053,11 +1053,17 @@ function validateIngredientInput(text) {
     return { valid: false, message: "Input is too short to be an ingredient list." };
   }
   
-  // Check if it contains any E-numbers pattern like E330 or INS 330
-  const hasENumberPattern = /(?:E|INS)?\s*-?\s*\d{3,4}/i.test(clean);
+  const letterCount = (clean.match(/[a-z]/gi) || []).length;
+  
+  // Must contain at least some letters (otherwise it is just numbers or symbols)
+  if (letterCount === 0) {
+    return { valid: false, message: "Input must contain at least some letters. Please enter a valid ingredient list." };
+  }
+
+  // Check if it contains any valid E-numbers pattern like E330 or INS 330 using word boundaries
+  const hasENumberPattern = /\b(?:E|INS)?\s*-?\s*\d{3,4}\b/i.test(clean);
 
   // Must contain a reasonable ratio of letters (at least 25% of the input should be letters, unless it's E-numbers)
-  const letterCount = (clean.match(/[a-z]/gi) || []).length;
   const letterRatio = clean.length > 0 ? letterCount / clean.length : 0;
   if (letterRatio < 0.25 && !hasENumberPattern) {
     return { valid: false, message: "Input contains too many symbols or numbers. Please enter a valid ingredient list." };
