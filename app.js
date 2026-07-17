@@ -1053,9 +1053,14 @@ function validateIngredientInput(text) {
     return { valid: false, message: "Input is too short to be an ingredient list." };
   }
   
-  // If it's just numbers
-  if (/^\d+$/.test(clean.replace(/\s+/g, ""))) {
-    return { valid: false, message: "Input cannot be just numbers. Please enter a valid ingredient list." };
+  // Check if it contains any E-numbers pattern like E330 or INS 330
+  const hasENumberPattern = /(?:E|INS)?\s*-?\s*\d{3,4}/i.test(clean);
+
+  // Must contain a reasonable ratio of letters (at least 25% of the input should be letters, unless it's E-numbers)
+  const letterCount = (clean.match(/[a-z]/gi) || []).length;
+  const letterRatio = clean.length > 0 ? letterCount / clean.length : 0;
+  if (letterRatio < 0.25 && !hasENumberPattern) {
+    return { valid: false, message: "Input contains too many symbols or numbers. Please enter a valid ingredient list." };
   }
 
   // Common non-food conversational words (stop words)
@@ -1105,9 +1110,6 @@ function validateIngredientInput(text) {
       }
     }
   }
-
-  // Check if it contains any E-numbers pattern like E330 or INS 330
-  const hasENumberPattern = /(?:E|INS)?\s*-?\s*\d{3,4}/i.test(clean);
 
   // If it is highly conversational and has no known ingredients or E-numbers, block it
   if (stopWordRatio > 0.4 && !hasKnownIngredient && !hasENumberPattern) {
