@@ -769,6 +769,13 @@ function copyHebrewLabel() {
     .catch(() => showToast("Failed to copy ingredients."));
 }
 
+function escapeCsv(val) {
+  if (val === null || val === undefined) {
+    return "";
+  }
+  return String(val).replace(/"/g, '""');
+}
+
 function exportToCsv() {
   if (state.currentIngredients.length === 0) {
     showToast("No data to export!");
